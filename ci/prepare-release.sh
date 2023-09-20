@@ -3,10 +3,6 @@
 set -e
 cd $(dirname $0)/..
 
-# Github Repo
-REPO_OWNER="KeystoneHQ"
-REPO_NAME="keystone3-firmware"
-
 # Release Version
 CURRENT_BRANCH=$BUILDKITE_BRANCH
 #VERSION="${CURRENT_BRANCH#release/v}"

@@ -9,9 +9,9 @@ S3_BUCKET_NAME="keystone-contents"
 ASSET_OBJECT_KEY="/contents/KeystoneFirmwareG3/v$VERSION/$ASSET_FILE_NAME"
 
 if [ "$ENV" = "production" ]; then
-  KEYSTONE_RELEASE_DOMAIN="https://api.keyst.one"
+  KEYSTONE_RELEASE_DOMAIN="https://api-internal.keyst.one"
 else
-  KEYSTONE_RELEASE_DOMAIN="https://api-staging.keyst.one"
+  KEYSTONE_RELEASE_DOMAIN="https://api-staging-internal.keyst.one"
 fi
 
 
@@ -37,17 +37,15 @@ fi
 
 # Create Release in Keystone
 echo "Start create Keystone release $VERSION for $ENV"
-
-KEYSTONE_RELEASE_URL="$KEYSTONE_RELEASE_DOMAIN/v1/web/firmware_release"
-RELEASE_REQUEST_BODY='{"version": "'$VERSION'","changelog_en": "'$change_log_en'","changelog_zh": "'$change_log_zh'","download_url": "'$ASSET_OBJECT_KEY'"}'
-
-echo "Keystone Release Request Body: $RELEASE_REQUEST_BODY"
-
+KEYSTONE_RELEASE_URL="$KEYSTONE_RELEASE_DOMAIN/v1/web/firmware_release/"
 release_response=$(curl -L \
   -X POST "$KEYSTONE_RELEASE_URL" \
-  -H "Content-Type: application/json" \
-  -d "$RELEASE_REQUEST_BODY"
-)
+  -F 'version="'"$VERSION"'"' \
+  -F 'changelog_en="'"$change_log_en"'"' \
+  -F 'changelog_zh="'"$change_log_zh"'"' \
+  -F 'download_url="'"$ASSET_OBJECT_KEY"'"'
+  )
+
 release_success=$(echo "$release_response" | grep -o -m 1 '"success": [a-z]*' | awk -F': ' '{print $2}')
 
 if [[ "$release_success" == "true" ]]; then
