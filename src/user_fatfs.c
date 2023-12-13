@@ -8,6 +8,7 @@
 #include "diskio.h"
 #include "drv_gd25qxx.h"
 #include "drv_sdcard.h"
+#include "sha256.h"
 
 void FatfsError(FRESULT errNum);
 
@@ -110,6 +111,55 @@ int FatfsFileMd5(const TCHAR* path)
     printf("%s md5: ", path);
     for (int i = 0; i < sizeof(md5); i++) {
         printf("%02x", md5[i]);
+    }
+    printf("\r\n");
+
+    return RES_OK;
+}
+
+int FatfsFileSha256(const TCHAR* path)
+{
+    FIL fp;
+    struct sha256_ctx ctx;
+    sha256_init(&ctx);
+    uint8_t *fileBuf;
+    uint32_t fileSize = 0;
+    uint32_t readBytes = 0;
+    int len, changePercent = 0, percent;
+    unsigned char hash[32];
+    FRESULT res = f_open(&fp, path, FA_OPEN_EXISTING | FA_READ);
+    if (res) {
+        FatfsError(res);
+        return RES_ERROR;
+    }
+    fileSize = f_size(&fp);
+    int lastLen = fileSize;
+    len = lastLen > 1024 ? 1024 : lastLen;
+    fileBuf = SRAM_MALLOC(len);
+    printf("reading, please wait.\n");
+    MD5_Init(&ctx);
+    while (lastLen) {
+        len = lastLen > 1024 ? 1024 : lastLen;
+        res = f_read(&fp, (void*)fileBuf, len, &readBytes);
+        if (res) {
+            FatfsError(res);
+            f_close(&fp);
+            SRAM_FREE(fileBuf);
+            return RES_ERROR;
+        }
+        lastLen -= len;
+        MD5_Update(&ctx, fileBuf, len);
+        percent = (fileSize - lastLen) * 100 / fileSize;
+        if (percent != changePercent) {
+            changePercent = percent;
+            printf("md5 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
+        }
+    }
+	sha256_done(&ctx, (struct sha256 *)hash);
+    SRAM_FREE(fileBuf);
+    printf("%s hash: ", path);
+    for (int i = 0; i < sizeof(hash); i++) {
+        printf("%02x", hash[i]);
     }
     printf("\r\n");
 

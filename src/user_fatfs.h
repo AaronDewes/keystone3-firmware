@@ -45,6 +45,7 @@ int FatfsFileCopy(const TCHAR* source, const TCHAR* dest);
 uint32_t FatfsFileGetSize(const TCHAR *path);
 void FatfsError(FRESULT errNum);
 uint32_t FatfsGetSize(const char *path);
+int FatfsFileSha256(const TCHAR* path);
 
 #endif /* _USER_FATFS_H */
 
