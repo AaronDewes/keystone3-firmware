@@ -137,7 +137,6 @@ int FatfsFileSha256(const TCHAR* path)
     len = lastLen > 1024 ? 1024 : lastLen;
     fileBuf = SRAM_MALLOC(len);
     printf("reading, please wait.\n");
-    MD5_Init(&ctx);
     while (lastLen) {
         len = lastLen > 1024 ? 1024 : lastLen;
         res = f_read(&fp, (void*)fileBuf, len, &readBytes);
@@ -148,11 +147,11 @@ int FatfsFileSha256(const TCHAR* path)
             return RES_ERROR;
         }
         lastLen -= len;
-        MD5_Update(&ctx, fileBuf, len);
+        sha256_update(&ctx, fileBuf, len);
         percent = (fileSize - lastLen) * 100 / fileSize;
         if (percent != changePercent) {
             changePercent = percent;
-            printf("md5 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
+            printf("sha256 update percent = %d\n", (fileSize - lastLen) * 100 / fileSize);
         }
     }
 	sha256_done(&ctx, (struct sha256 *)hash);
@@ -375,7 +374,8 @@ void FatfsDirectoryListing(char *ptr)
             acc_files++;
             acc_size += Finfo.fsize;
         }
-        printf("%c%c%c%c%c   %u/%02u/%02u   %02u:%02u %9lu  %s\r\n",
+        printf("%s\n", Finfo.fname);
+        printf("%c%c%c%c%c   %u/%02u/%02u   %02u:%02u %9lu\r\n",
                (Finfo.fattrib & AM_DIR) ? 'd' : '-',
                (Finfo.fattrib & AM_RDO) ? 'r' : '-',
                (Finfo.fattrib & AM_HID) ? 'h' : '-',
@@ -383,7 +383,7 @@ void FatfsDirectoryListing(char *ptr)
                (Finfo.fattrib & AM_ARC) ? 'a' : '-',
                (Finfo.fdate >> 9) + 1980, (Finfo.fdate >> 5) & 15, Finfo.fdate & 31,
                (Finfo.ftime >> 11), (Finfo.ftime >> 5) & 63,
-               Finfo.fsize, Finfo.fname);
+               Finfo.fsize);
     }
 #if 0
     printf("%4u File(s),%10llu bytes total\r\n%4u Dir(s)", acc_files, acc_size, acc_dirs);
