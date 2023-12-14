@@ -759,6 +759,7 @@ void GuiHomeRestart(void)
 
 void GuiHomeRefresh(void)
 {
+    PrintHeapInfo();
     if (GetCurrentAccountIndex() > 2)
     {
         return;
