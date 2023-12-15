@@ -117,7 +117,7 @@ int FatfsFileMd5(const TCHAR* path)
     return RES_OK;
 }
 
-int FatfsFileSha256(const TCHAR* path)
+int FatfsFileSha256(const TCHAR* path, uint8_t *sha256)
 {
     FIL fp;
     struct sha256_ctx ctx;
@@ -157,6 +157,7 @@ int FatfsFileSha256(const TCHAR* path)
 	sha256_done(&ctx, (struct sha256 *)hash);
     SRAM_FREE(fileBuf);
     printf("%s hash: ", path);
+    memcpy(sha256, hash, sizeof(hash));
     for (int i = 0; i < sizeof(hash); i++) {
         printf("%02x", hash[i]);
     }
@@ -412,6 +413,17 @@ uint32_t FatfsGetSize(const char *path)
     }
 
     return (QWORD)dw * fs->csize * 512;
+}
+
+bool FatfsFileExist(const char *path)
+{
+    FILINFO fno;
+    FRESULT res = f_stat(path, &fno);
+    if (res == FR_OK) {
+        return true;
+    }
+
+    return false;
 }
 
 int MMC_disk_initialize(void)

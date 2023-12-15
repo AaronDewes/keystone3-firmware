@@ -827,7 +827,8 @@ static void FatfsFileMd5Func(int argc, char *argv[])
 static void FatfsFileSha256Func(int argc, char *argv[])
 {
     VALUE_CHECK(argc, 1);
-    FatfsFileSha256(argv[0]);
+    uint8_t sha256[32];
+    FatfsFileSha256(argv[0], sha256);
 }
 
 static void FatfsFileWriteFunc(int argc, char *argv[])

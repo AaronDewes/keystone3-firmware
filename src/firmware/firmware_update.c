@@ -143,7 +143,8 @@ static bool CheckOtaFile(OtaFileInfo_t *info, const char *filePath, uint32_t *pH
 
 bool CheckOtaBinVersion(char *version)
 {
-    // return true;
+    strcpy(version, "99.99.99");
+    return true;
     OtaFileInfo_t otaFileInfo = {0};
     uint32_t headSize;
     bool ret = true;

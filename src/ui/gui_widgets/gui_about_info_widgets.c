@@ -28,7 +28,6 @@ static void LogExportHandler(lv_event_t *e);
 static void StartFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseVerifyHintBoxHandler(lv_event_t *e);
 static void OpenVerifyFirmwareHandler(lv_event_t *e);
-static void StopFirmwareCheckSumHandler(lv_event_t *e);
 static void CloseQrcodeHandler(lv_event_t *e);
 static void GuiQrcodeHandler(lv_event_t *e);
 
@@ -382,7 +381,7 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
         lv_obj_set_size(btn, 408, 66);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -24);
         lv_obj_set_style_bg_color(btn, WHITE_COLOR_OPA20, LV_PART_MAIN);
-        lv_obj_add_event_cb(btn, StopFirmwareCheckSumHandler, LV_EVENT_CLICKED, NULL);
+        lv_obj_add_event_cb(btn, GuiStopFirmwareCheckSumHandler, LV_EVENT_CLICKED, &g_noticeHintBox);
 
         lv_obj_t *desc = GuiCreateNoticeLabel(g_noticeHintBox, "0%");
         lv_obj_align(desc, LV_ALIGN_BOTTOM_MID, 0, -140);
@@ -391,12 +390,17 @@ static void StartFirmwareCheckSumHandler(lv_event_t *e)
     }
 }
 
-static void StopFirmwareCheckSumHandler(lv_event_t *e)
+void GuiStopFirmwareCheckSumHandler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_CLICKED) {
         GuiModelStopCalculateCheckSum();
-        GUI_DEL_OBJ(g_noticeHintBox)
+        void **param = lv_event_get_user_data(e);
+        if (param != NULL) {
+            lv_obj_t *obj = *param;
+            lv_obj_del(obj);
+            *param = NULL;
+        }
     }
 }
 
